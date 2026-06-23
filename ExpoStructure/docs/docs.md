@@ -19,13 +19,13 @@
 
 ## Prerequisites
 
-| Tool | Version | Purpose |
-|---|---|---|
-| Node.js | >= 18 | JavaScript runtime |
-| EAS CLI | Latest | Cloud builds |
-| Android Studio | Latest | Android emulator |
-| Xcode | Latest | iOS simulator (macOS only) |
-| Expo Go | Latest | Run on physical device |
+| Tool           | Version | Purpose                    |
+| -------------- | ------- | -------------------------- |
+| Node.js        | >= 18   | JavaScript runtime         |
+| EAS CLI        | Latest  | Cloud builds               |
+| Android Studio | Latest  | Android emulator           |
+| Xcode          | Latest  | iOS simulator (macOS only) |
+| Expo Go        | Latest  | Run on physical device     |
 
 ```bash
 # Install EAS CLI globally
@@ -96,11 +96,11 @@ src/
 
 **Expo Router file → route mapping:**
 
-| File | Route |
-|---|---|
-| `app/index.tsx` | `/` |
-| `app/explore.tsx` | `/explore` |
-| `app/[id].tsx` | `/123` (dynamic) |
+| File              | Route                |
+| ----------------- | -------------------- |
+| `app/index.tsx`   | `/`                  |
+| `app/explore.tsx` | `/explore`           |
+| `app/[id].tsx`    | `/123` (dynamic)     |
 | `app/_layout.tsx` | Layout (not a route) |
 
 ---
@@ -147,23 +147,25 @@ npx expo export --platform web    # production build
 ## Expo Go vs Development Build
 
 ### What is Expo Go?
+
 A free app from the App Store / Play Store. You scan a QR code and run your app instantly — no build needed. Great for learning and quick prototyping.
 
 ### What is a Development Build?
+
 A custom version of Expo built specifically for your project. It supports any native npm package and behaves exactly like your production app — but with developer tools enabled.
 
 ### Key Differences
 
-| Feature | Expo Go | Development Build |
-|---|---|---|
-| Setup time | Instant (just install the app) | ~10–20 min first time |
-| Custom native modules | ❌ Not supported | ✅ Fully supported |
-| Production behaviour | ❌ Sandbox only | ✅ Matches production |
-| Stripe / BLE / Camera | ❌ | ✅ |
-| Push notifications (full) | ❌ Limited | ✅ Full support |
-| TestFlight / Internal test | ❌ | ✅ |
-| App size | Larger (all Expo modules) | Smaller (only what you use) |
-| Best for | Prototyping / learning | Real app development |
+| Feature                    | Expo Go                        | Development Build           |
+| -------------------------- | ------------------------------ | --------------------------- |
+| Setup time                 | Instant (just install the app) | ~10–20 min first time       |
+| Custom native modules      | ❌ Not supported               | ✅ Fully supported          |
+| Production behaviour       | ❌ Sandbox only                | ✅ Matches production       |
+| Stripe / BLE / Camera      | ❌                             | ✅                          |
+| Push notifications (full)  | ❌ Limited                     | ✅ Full support             |
+| TestFlight / Internal test | ❌                             | ✅                          |
+| App size                   | Larger (all Expo modules)      | Smaller (only what you use) |
+| Best for                   | Prototyping / learning         | Real app development        |
 
 > **Rule of thumb:** Start with Expo Go. Switch to Development Build as soon as you need any native package (e.g. Stripe, Firebase, BLE, custom Camera).
 
@@ -171,89 +173,205 @@ A custom version of Expo built specifically for your project. It supports any na
 
 ## Convert to Development Build
 
-Follow these steps in order. Do them once per project.
+### ✅ Progress — What's Done
 
-### Step 1 — Install EAS CLI
+| Status | Step | Detail |
+|---|---|---|
+| ✅ Done | `expo-dev-client` installed | Added to `package.json` |
+| ✅ Done | `eas.json` created | development · staging · production profiles |
+| ✅ Done | `app.json` updated | `bundleIdentifier` + `package` name added |
+| ✅ Done | npm scripts added | All build/start/submit scripts in `package.json` |
+| ✅ Done | `eas login` | Logged in as `DarshanRana` |
+| ✅ Done | `eas init` | Project: `@darshanrana/ExpoStructure` · ID: `1454ab29-793f-4dd3-8692-7d5ba0c5668e` |
+| 🔄 Running | Android dev build | `npm run build:dev:android` |
+| ⏳ Pending | iOS dev build | `npm run build:dev:ios` |
+| ⏳ Pending | Install build on device | Download & install `.apk` / `.ipa` |
+| ⏳ Pending | Start dev-client server | `npm run start:dev` |
+
+---
+
+### Steps Detail
+
+#### Step 1 — Install EAS CLI ✅
 ```bash
 npm install -g eas-cli
 ```
 
-### Step 2 — Create a free Expo account
-Go to [expo.dev](https://expo.dev) → Sign Up (free)
+#### Step 2 — Install expo-dev-client ✅
+```bash
+npx expo install expo-dev-client
+```
 
-### Step 3 — Login via terminal
+#### Step 3 — Create eas.json ✅
+File `eas.json` created with development, staging, production profiles.
+
+#### Step 4 — Update app.json ✅
+Added `bundleIdentifier` (iOS) and `package` (Android) to `app.json`.
+
+#### Step 5 — Add npm scripts ✅
+All build, start, and submit scripts added to `package.json`.
+
+#### Step 6 — Login to Expo ✅
 ```bash
 eas login
-# Enter your Expo email and password
+# Logged in as: DarshanRana
 ```
 
-### Step 4 — Link your project to Expo
+#### Step 7 — Link project to Expo ✅
 ```bash
 eas init
-# This adds a projectId to your app.json automatically
+# Project: @darshanrana/ExpoStructure
+# Project ID: 1454ab29-793f-4dd3-8692-7d5ba0c5668e
 ```
 
-### Step 5 — Configure EAS build
+#### Step 8 — Build development app 🔄
 ```bash
-eas build:configure
-# Creates eas.json in your project root
+# Android (currently running)
+npm run build:dev:android
+
+# iOS Simulator (No Apple Developer Account needed!)
+npm run build:dev:ios-sim
+
+# iOS Physical Device (Requires paid Apple Developer Account)
+eas device:create
+npm run build:dev:ios
+
+# Both at once (requires paid Apple Developer Account for iOS)
+npm run build:dev:all
+```
+> ☁️ Builds run on EAS cloud servers. Takes ~10–20 min. You'll get a download link when done.
+
+#### Step 9 — Install the build on your device ⏳
+- **Android** → Download `.apk` from the EAS link → Install on your device
+- **iOS** → Download `.ipa` from the EAS link → Install via Expo dashboard
+
+#### Step 10 — Start the dev server ⏳
+```bash
+npm run start:dev
+```
+> Open the installed development build app → it auto-connects to your Metro server.
+
+#### Step 3 — Register your iOS device (iOS only, first time)
+
+```bash
+eas device:create
+# Follow the printed URL to register your device UDID
 ```
 
-Your `eas.json` will look like this:
+#### Step 4 — Build the development app
+
+```bash
+# Android
+npm run build:dev:android
+
+# iOS Simulator (No Apple Developer Account needed!)
+npm run build:dev:ios-sim
+
+# iOS Physical Device (Requires paid Apple Developer Account)
+npm run build:dev:ios
+
+# Both at once (requires paid Apple Developer Account for iOS)
+npm run build:dev:all
+```
+
+> ☁️ Builds run on EAS cloud servers. Takes ~10–20 min. You'll get a download link when done.
+
+#### Step 5 — Install the build on your device
+
+- **Android** → Download `.apk` from the EAS link → Install on your device
+- **iOS** → Download `.ipa` from the EAS link → Install via Expo dashboard
+
+#### Step 6 — Start the dev server
+
+```bash
+npm run start:dev
+```
+
+> Open the installed development build app → it auto-connects to your Metro server.
+
+---
+
+### Current `eas.json` (already set up)
+
 ```json
 {
+  "cli": {
+    "version": ">= 16.0.0"
+  },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal"
     },
-    "preview": {
+    "development-simulator": {
+      "developmentClient": true,
+      "ios": {
+        "simulator": true
+      }
+    },
+    "staging": {
       "distribution": "internal"
     },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
     "production": {}
   }
 }
 ```
 
-### Step 6 — Install expo-dev-client
-```bash
-npx expo install expo-dev-client
-```
+### npm Scripts Reference
 
-### Step 7 — Register your iOS device (iOS only, first time)
-```bash
-eas device:create
-# Follow the link shown to register your device UDID
-```
+#### Start
+| Script | Description |
+|---|---|
+| `npm start` | Start Expo dev server |
+| `npm run start:clear` | Start with cache cleared |
+| `npm run start:dev` | Start with dev-client |
+| `npm run start:tunnel` | Start with tunnel (physical devices) |
+| `npm run start:lan` | Start on LAN |
 
-### Step 8 — Build the development app
-```bash
-# Android
-eas build --profile development --platform android
+#### Run Platform
+| Script | Description |
+|---|---|
+| `npm run android` | Open Android emulator |
+| `npm run ios` | Open iOS simulator |
+| `npm run web` | Open in browser |
 
-# iOS
-eas build --profile development --platform ios
+#### Build (EAS Cloud)
+| Script | Platform | Purpose |
+|---|---|---|
+| `npm run build:dev:android` | Android | Development build |
+| `npm run build:dev:ios` | iOS | Development build (Physical Device - paid Apple Dev Account req.) |
+| `npm run build:dev:ios-sim` | iOS | Development build (Simulator - Free) |
+| `npm run build:dev:all` | Both | Development build |
+| `npm run build:staging:android` | Android | Staging / QA build |
+| `npm run build:staging:ios` | iOS | Staging / QA build |
+| `npm run build:prod:android` | Android | Production build |
+| `npm run build:prod:ios` | iOS | Production build |
+| `npm run build:web` | Web | Export static web build |
 
-# Both at once
-eas build --profile development --platform all
-```
-> ☁️ Builds run on EAS cloud servers. Takes ~10–20 min. You'll get a download link when done.
+#### Submit to Stores
+| Script | Description |
+|---|---|
+| `npm run submit:android` | Submit to Google Play Store |
+| `npm run submit:ios` | Submit to Apple App Store |
 
-### Step 9 — Install the build on your device
-- **Android** → Download the `.apk` from the link → Install it on your device
-- **iOS** → Download the `.ipa` from the link → Install via the Expo dashboard
-
-### Step 10 — Start the dev server with dev-client
-```bash
-npx expo start --dev-client
-```
-Open the installed development build app on your device → it connects to your Metro server automatically.
+#### Utilities
+| Script | Description |
+|---|---|
+| `npm run lint` | Run ESLint |
+| `npm run lint:fix` | Auto-fix lint errors |
+| `npm run doctor` | Check project health |
+| `npm run reset-project` | Reset to blank template |
 
 ---
 
 ### Local Build (No EAS Cloud)
 
-If you prefer to build locally on your machine instead of using EAS cloud:
+Build directly on your machine without EAS:
 
 ```bash
 # Android (requires Android Studio)
@@ -262,6 +380,7 @@ npx expo run:android
 # iOS (requires Xcode, macOS only)
 npx expo run:ios
 ```
+
 > This generates `android/` and `ios/` folders in your project (like React Native CLI).
 
 ---
@@ -290,11 +409,11 @@ npm run reset-project
 
 **Dev Server keyboard shortcuts:**
 
-| Key | Action |
-|---|---|
+| Key | Action       |
+| --- | ------------ |
 | `a` | Open Android |
-| `i` | Open iOS |
-| `w` | Open Web |
-| `r` | Reload |
-| `m` | Dev menu |
-| `j` | Debugger |
+| `i` | Open iOS     |
+| `w` | Open Web     |
+| `r` | Reload       |
+| `m` | Dev menu     |
+| `j` | Debugger     |
