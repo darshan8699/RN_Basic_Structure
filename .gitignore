@@ -1,6 +1,7 @@
 # Node modules
 node_modules/
 ReactNativeCliStructure/node_modules/
+ExpoStructure/node_modules/
 
 # iOS
 ReactNativeCliStructure/ios/Pods/
@@ -13,6 +14,9 @@ ReactNativeCliStructure/android/app/build/
 
 # Build
 ReactNativeCliStructure/android/local.properties
+
+# Expo
+ExpoStructure/.expo/
 
 # Misc
 .DS_Store
