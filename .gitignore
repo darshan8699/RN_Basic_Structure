@@ -1,0 +1,19 @@
+# Node modules
+node_modules/
+ReactNativeCliStructure/node_modules/
+
+# iOS
+ReactNativeCliStructure/ios/Pods/
+ReactNativeCliStructure/vendor/
+
+# Android
+ReactNativeCliStructure/android/.gradle/
+ReactNativeCliStructure/android/build/
+ReactNativeCliStructure/android/app/build/
+
+# Build
+ReactNativeCliStructure/android/local.properties
+
+# Misc
+.DS_Store
+*.log
