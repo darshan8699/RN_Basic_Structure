@@ -1,5 +1,6 @@
 import React from 'react';
 import { AuthProvider } from '../context/AuthContext';
+import { ApiProvider } from '../../apis/graphql/api.provider';
 
 // AppProvider — wraps the app with all context providers
 // Add more providers here (ThemeProvider, QueryClientProvider, etc.)
@@ -10,9 +11,11 @@ interface AppProviderProps {
 
 const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
+    <ApiProvider>
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </ApiProvider>
   );
 };
 

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { apiClient } from "../../apis/apiClient";
+import { apiClient } from "../../apis/graphql/api.client";
 import { ApiResponse, User } from "@/common/types";
 
 // useAuth — custom hook for login, logout and fetching the current user
