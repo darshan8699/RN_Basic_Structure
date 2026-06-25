@@ -1,3 +1,12 @@
+## [1.0.2](https://github.com/darshan8699/expo-structure/compare/v1.0.1...v1.0.2) (2026-06-25)
+
+
+### Bug Fixes
+
+* add $1 to commit-msg hook so commitlint reads the commit message file ([6abc28b](https://github.com/darshan8699/expo-structure/commit/6abc28ba78b6413b544e586c965fd847a20e7d93))
+* change data ([c0a3d30](https://github.com/darshan8699/expo-structure/commit/c0a3d3043479bea498b65a9f7f87b3008c1f2277))
+* make husky commit-msg hook executable ([6e824c1](https://github.com/darshan8699/expo-structure/commit/6e824c1ffe7a8302d0164c78a489f084977c0108))
+
 ## [1.0.1](https://github.com/darshan8699/expo-structure/compare/v1.0.0...v1.0.1) (2026-06-25)
 
 
