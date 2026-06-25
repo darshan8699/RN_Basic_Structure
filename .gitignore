@@ -1,23 +1,43 @@
-# Node modules
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
 node_modules/
-ReactNativeCliStructure/node_modules/
-ExpoStructure/node_modules/
-
-# iOS
-ReactNativeCliStructure/ios/Pods/
-ReactNativeCliStructure/vendor/
-
-# Android
-ReactNativeCliStructure/android/.gradle/
-ReactNativeCliStructure/android/build/
-ReactNativeCliStructure/android/app/build/
-
-# Build
-ReactNativeCliStructure/android/local.properties
 
 # Expo
-ExpoStructure/.expo/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
 
-# Misc
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
 .DS_Store
-*.log
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+example
+
+# generated native folders
+/ios
+/android

@@ -66,8 +66,17 @@ Open `.husky/pre-commit` in your editor. By default, it runs `npm test`. You can
 
 ```bash
 # .husky/pre-commit
+# Exit immediately if any check fails
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Lint and test Expo project
+echo "📦 Checking Expo project..."
 npm run lint
 npm run test
+
+echo "✅ All checks passed successfully! Proceeding with commit."
 ```
 
 #### 2. Create a `pre-push` hook (Optional)

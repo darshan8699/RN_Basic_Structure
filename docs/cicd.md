@@ -1,6 +1,6 @@
 # 🚀 Continuous Integration & Continuous Deployment (CI/CD)
 
-CI/CD is a cornerstone of modern software development, especially for mobile applications. This document covers what CI/CD is, its uses, an analysis of the CI/CD pipeline inside the **Asthma Australia App** project, and a guide on how to integrate CI/CD into this `ExpoStructure` project.
+CI/CD is a cornerstone of modern software development, especially for mobile applications. This document covers what CI/CD is, its uses, an analysis of the CI/CD pipeline inside the **Asthma Australia App** project, and a guide on how CI/CD is integrated into this `expo-structure` project.
 
 ---
 
@@ -91,44 +91,36 @@ Key files involved:
 
 ## 🛠️ How to Add CI/CD to Your Expo Project
 
-If you want to add CI/CD to a React Native / Expo application like your own workspace (e.g. `RN_Basic_Structure`), you can set it up via GitHub Actions.
+If you want to add CI/CD to a React Native / Expo application, you can set it up via GitHub Actions.
 
 If your repository is hosted on GitHub, you can create a file named `.github/workflows/ci.yml` in your project root to handle standard linting, typechecking, tests, and EAS cloud deployment.
 
-GitHub Actions workflow at the root of the workspace: **[.github/workflows/ci.yml](file:///Users/darshan/Documents/Projects/Products/RN_Basic_Structure/.github/workflows/ci.yml)**.
+GitHub Actions workflow: **[.github/workflows/ci.yml](file:///Users/darshan/Documents/Projects/Products/expo-structure/.github/workflows/ci.yml)**
 
-This workflow handles both **ExpoStructure** and **ReactNativeCliStructure** dynamically depending on which files are modified.
+This workflow validates the Expo project and, when passing, triggers EAS cloud builds.
 
 ---
 
 ### ⚙️ How the Workflow is Configured
 
-The workflow is broken down into three logical jobs:
+The workflow is broken down into two logical jobs:
 
-#### 1. Expo Structure validation (`expo-ci`)
+#### 1. Expo validation (`expo-ci`)
 
-- **Trigger condition:** Automatically runs when files inside `ExpoStructure/**` are modified, or on a direct push to `main` / `develop`.
+- **Trigger condition:** Automatically runs on any push or pull request to `main` / `develop`.
 - **Execution:**
-  1. Sets up Node.js v20 with dependency caching.
-  2. Runs `npm ci` inside `ExpoStructure`.
+  1. Sets up Node.js v20 with dependency caching at root.
+  2. Runs `npm ci` at the root.
   3. Runs code styling/validation with `npm run lint`.
-  4. Runs Expo's configuration validator using `npm run doctor`.
+  4. Runs Jest unit tests with `npm run test`.
+  5. Runs Expo's configuration validator using `npm run doctor`.
 
-#### 2. React Native CLI validation (`rn-cli-ci`)
+#### 2. EAS Build Orchestration (`eas-build`)
 
-- **Trigger condition:** Automatically runs when files inside `ReactNativeCliStructure/**` are modified, or on a direct push to `main` / `develop`.
-- **Execution:**
-  1. Sets up Node.js v22 with dependency caching.
-  2. Runs `npm ci` inside `ReactNativeCliStructure`.
-  3. Runs linter with `npm run lint`.
-  4. Runs Jest test suite with `npm run test`.
-
-#### 3. EAS Build Orchestration (`eas-build`)
-
-- **Trigger condition:** Automatically runs on pushes to `develop` (staging) or `main` (production).
+- **Trigger condition:** Automatically runs on pushes to `main`, or manually via `workflow_dispatch`.
 - **Execution:**
   1. Logs into EAS using the configured `EXPO_TOKEN` secret.
-  2. Runs a cloud build for Android and iOS using the specified profiles (`staging` or `production`).
+  2. Runs a cloud build for Android and iOS using the specified profiles (`development`, `staging`, or `production`).
 
 ---
 
@@ -137,52 +129,48 @@ The workflow is broken down into three logical jobs:
 To make the automated cloud builds work:
 
 1. **Get an Expo Token:**
-   - Go to [expo.dev](https://expo.dev) -> account settings -> Access Tokens -> Generate a new token.
+   - Go to [expo.dev](https://expo.dev) → account settings → Access Tokens → Generate a new token.
 2. **Add the Secret to GitHub:**
    - Open your repository on GitHub.
-   - Go to **Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**.
+   - Go to **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
    - Name: `EXPO_TOKEN`
    - Value: _Paste your generated Expo Access Token_.
 3. **Push to GitHub:**
-   - Once the secret is added, every push to `develop` or `main` will trigger the corresponding staging/production build in EAS.
+   - Once the secret is added, every push to `main` will trigger the corresponding build in EAS.
 
 ---
 
 ## 🔍 Detailed Line-by-Line Pipeline Analysis
 
-Below is a detailed, line-by-line explanation of the CI/CD pipelines in both projects: **RN Basic Structure** (using GitHub Actions) and **Asthma Australia / Asthma Connect** (using Bitbucket Pipelines).
+Below is a detailed, line-by-line explanation of the CI/CD pipelines in both projects: **expo-structure** (using GitHub Actions) and **Asthma Australia / Asthma Connect** (using Bitbucket Pipelines).
 
-### 1. RN Basic Structure Pipeline
+### 1. expo-structure Pipeline
 
-- **File Location**: [.github/workflows/ci.yml](file:///Users/darshan/Documents/Projects/Products/RN_Basic_Structure/.github/workflows/ci.yml)
+- **File Location**: [.github/workflows/ci.yml](file:///Users/darshan/Documents/Projects/Products/expo-structure/.github/workflows/ci.yml)
 - **Platform**: GitHub Actions
-- **Target Architecture**: Monorepo style containing separate sub-folders for an Expo structure (`ExpoStructure`) and a React Native CLI structure (`ReactNativeCliStructure`).
+- **Target Architecture**: Single Expo project at the repository root.
 
 #### Block-by-Block & Line-by-Line Breakdown
 
-| Lines       | Code Snippet / Context                                        | Description & Purpose                                                                                                                                                                                                                          |
-| :---------- | :------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1**       | `name: Continuous Integration & Deployment (CI/CD)`           | Defines the name of this workflow that will display in the GitHub Actions sidebar.                                                                                                                                                             |
-| **3–7**     | `on: push: branches: [main, develop] pull_request: ...`       | **Triggers**: Dictates when the pipeline automatically starts. It runs on any direct push or pull request targeted at the `main` (production) or `develop` (staging) branches.                                                                 |
-| **9–16**    | `jobs: expo-ci: name: Expo Structure CI outputs: ...`         | **Job 1 (Expo Validation)**: Defines a job named `expo-ci` that runs on a clean Ubuntu runner. It exports an output called `expo_changed` to be referenced by downstream jobs.                                                                 |
-| **18–19**   | `- name: 📥 Checkout repository uses: actions/checkout@v4`    | Checks out the project code so that the virtual runner has access to compile it.                                                                                                                                                               |
-| **21–27**   | `- name: 🔍 Detect Changes id: filter ...`                    | Uses `paths-filter` to optimize performance. It checks if files inside the `ExpoStructure/` folder changed and saves the result as `steps.filter.outputs.expo`.                                                                                |
-| **29–35**   | `- name: 🟢 Setup Node.js uses: actions/setup-node@v4 ...`    | Installs Node.js v20. It runs conditionally (`if`) only if files inside `ExpoStructure` changed or if this was a direct branch push. It automatically caches packages using the `package-lock.json` checksum as a key to speed up build times. |
-| **37–41**   | `- name: 📦 Install Dependencies run: cd ExpoStructure ...`   | Installs node modules under the `ExpoStructure` folder. It uses `npm ci` (Clean Install), which is faster and cleaner for continuous integration environments than `npm install`.                                                              |
-| **43–47**   | `- name: 🧹 Run Lint & Type Checks run: cd ExpoStructure ...` | Runs automated ESLint and/or TypeScript configuration checking for code syntax compliance.                                                                                                                                                     |
-| **49–53**   | `- name: 🏥 Run Expo Doctor run: cd ExpoStructure ...`        | Executes `expo-doctor` to analyze Expo configuration files (`app.json`, packages) and verify dependency health/compatibility.                                                                                                                  |
-| **55–59**   | `rn-cli-ci: name: React Native CLI Structure CI ...`          | **Job 2 (React Native CLI Validation)**: Defines a job to test the React Native CLI setup folder, running on Ubuntu.                                                                                                                           |
-| **60–70**   | `uses: actions/checkout@v4` / `uses: dorny/paths-filter@v3`   | Performs checkout and inspects if files in the `ReactNativeCliStructure/` subfolder have changed.                                                                                                                                              |
-| **71–77**   | `- name: 🟢 Setup Node.js uses: actions/setup-node@v4 ...`    | Sets up Node.js v22 (representing a newer Node version for CLI structure dependency profile) and configures caching for its specific dependencies.                                                                                             |
-| **79–83**   | `- name: 📦 Install Dependencies run: cd RN_CLI ...`          | Runs a clean install of dependencies inside `ReactNativeCliStructure`.                                                                                                                                                                         |
-| **85–89**   | `- name: 🧹 Run Lint run: cd ReactNativeCliStructure ...`     | Executes the linter in the React Native CLI directory.                                                                                                                                                                                         |
-| **91–95**   | `- name: 🧪 Run Unit Tests run: cd ...`                       | Runs Jest unit tests to verify that standard code behaviors are intact.                                                                                                                                                                        |
-| **97–103**  | `eas-build: name: Trigger EAS Build needs: [expo-ci] ...`     | **Job 3 (EAS Deployment Build)**: Triggers Expo Application Services (EAS) cloud builds. It depends on `expo-ci` succeeding first and only fires on direct branch pushes to `main` or `develop`.                                               |
-| **104–114** | `actions/checkout@v4` / `actions/setup-node@v4`               | Prepares the code and Node.js environment to submit build details.                                                                                                                                                                             |
-| **115–120** | `- name: Setup EAS uses: expo/expo-github-action@v8 ...`      | Installs the EAS command-line tools. It authenticates with Expo Cloud Services using a secure token (`EXPO_TOKEN`) fetched from GitHub repository Secrets.                                                                                     |
-| **122–125** | `- name: 📦 Install Dependencies`                             | Installs the node modules required to run configuration compilation step scripts locally before uploading to EAS.                                                                                                                              |
-| **127–131** | `- name: 🚀 Trigger EAS Staging Build`                        | If pushed to the **`develop`** branch, it instructs EAS to build staging binaries for all platforms (iOS + Android) using the `staging` build profile.                                                                                         |
-| **133–138** | `- name: 🚀 Trigger EAS Production Build & Submit`            | If pushed to the **`main`** branch, it triggers production builds on EAS and automatically submits the generated binaries to the Apple App Store Connect and Google Play Console (`--auto-submit`).                                            |
+| Lines       | Code Snippet / Context                                        | Description & Purpose                                                                                                                                                                                                                           |
+| :---------- | :------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1**       | `name: Continuous Integration & Deployment (CI/CD)`           | Defines the name of this workflow that will display in the GitHub Actions sidebar.                                                                                                                                                              |
+| **3–7**     | `on: push: branches: [main, develop] pull_request: ...`       | **Triggers**: Dictates when the pipeline automatically starts. It runs on any direct push or pull request targeted at the `main` (production) or `develop` (staging) branches.                                                                  |
+| **9–19**    | `workflow_dispatch: inputs: build_type / platform`            | **Manual Trigger**: Allows manually running the workflow from GitHub UI, selecting a build type (`development`, `staging`, `production`, `none`) and target platform (`all`, `android`, `ios`).                                                  |
+| **21–22**   | `jobs: expo-ci: name: Expo Structure CI`                      | **Job 1 (Expo Validation)**: Defines a job named `expo-ci` that runs on a clean Ubuntu runner.                                                                                                                                                  |
+| **23–24**   | `- name: 📥 Checkout repository uses: actions/checkout@v4`    | Checks out the project code so that the virtual runner has access to compile it.                                                                                                                                                                |
+| **25–30**   | `- name: 🟢 Setup Node.js uses: actions/setup-node@v4 ...`    | Installs Node.js v20. Caches packages using `package-lock.json` at the root to speed up build times.                                                                                                                                           |
+| **31–32**   | `- name: 📦 Install Dependencies run: npm ci`                 | Installs node modules at the project root. Uses `npm ci` (Clean Install), which is faster and cleaner for continuous integration environments than `npm install`.                                                                               |
+| **33–34**   | `- name: 🧹 Run Lint & Type Checks run: npm run lint`         | Runs automated ESLint and/or TypeScript configuration checking for code syntax compliance.                                                                                                                                                      |
+| **35–36**   | `- name: 🧪 Run Unit Tests run: npm run test`                 | Runs Jest unit tests to verify that standard code behaviours are intact.                                                                                                                                                                        |
+| **37–38**   | `- name: 🏥 Run Expo Doctor run: npm run doctor`              | Executes `expo-doctor` to analyze Expo configuration files (`app.json`, packages) and verify dependency health/compatibility.                                                                                                                   |
+| **40–50**   | `eas-build: name: Trigger EAS Build needs: [expo-ci] ...`     | **Job 2 (EAS Deployment Build)**: Triggers Expo Application Services (EAS) cloud builds. It depends on `expo-ci` succeeding first and only fires on direct pushes to `main` or manual `workflow_dispatch`.                                      |
+| **51–60**   | `actions/checkout@v4` / `actions/setup-node@v4`               | Prepares the code and Node.js environment to submit build details.                                                                                                                                                                              |
+| **61–65**   | `- name: Setup EAS uses: expo/expo-github-action@v8 ...`      | Installs the EAS command-line tools. It authenticates with Expo Cloud Services using a secure token (`EXPO_TOKEN`) fetched from GitHub repository Secrets.                                                                                      |
+| **66–67**   | `- name: 📦 Install Dependencies run: npm ci`                 | Installs the node modules required to run configuration compilation step scripts locally before uploading to EAS.                                                                                                                               |
+| **68–75**   | `- name: 🚀 Trigger EAS Development Build (Android/iOS)`      | If triggered on `main` push or manual dispatch with `development` build type, instructs EAS to build development binaries for the selected platform.                                                                                            |
+| **76–80**   | `- name: 🚀 Trigger EAS Staging Build`                        | If manually dispatched with `staging` build type, it instructs EAS to build staging binaries for the selected platform using the `staging` build profile.                                                                                       |
+| **81–90**   | `- name: 🚀 Trigger EAS Production Build & Submit`            | If manually dispatched with `production` build type, triggers production builds on EAS and automatically submits the generated binaries to the Apple App Store Connect and Google Play Console (`--auto-submit`).                               |
 
 ---
 
@@ -201,21 +189,21 @@ Below is a detailed, line-by-line explanation of the CI/CD pipelines in both pro
 
 Bitbucket utilizes YAML anchors (`&name`) to declare steps that can be referenced (`*name`) later.
 
-| Line        | Step Name                  | Description & Purpose                                                                                                                                                                                                                        |
-| :---------- | :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **12–15**   | `&security-scan`           | Runs Atlassian’s security scan pipe (`git-secrets-scan`) to identify committed credentials, secret API keys, or certificates.                                                                                                                |
-| **17–23**   | `&linting`                 | Performs a clean install (`npm ci`) and runs static analysis checking code formatting constraints (`npm run lint`).                                                                                                                          |
-| **25–32**   | `&unit-tests`              | Runs unit tests inside a double-resourced container (`size: 2x` gives 8GB RAM for high performance) with Jest.                                                                                                                               |
-| **34–42**   | `&test-coverage`           | Runs tests, generates a test coverage report (`lcov.info`), and sends this information directly to Codacy's security/analysis dashboard.                                                                                                     |
-| **44–50**   | `&semantic-release`        | Analyzes commit history to automatically bump versions, create git release tags, and write automated changelogs.                                                                                                                             |
-| **52–74**   | `&build-ios`               | Compiles the iOS binary on EAS Cloud using `@radhya/mach`. It extracts the build URL from output JSON, calls a shell script to extract commit log updates, constructs a custom Slack notification, and pushes it to a Slack channel webhook. |
-| **75–97**   | `&build-android`           | Identical to iOS compilation above, but compiles and releases for Android.                                                                                                                                                                   |
-| **98–105**  | `&submit-android`          | Submits the latest successful Android bundle to the Google Play Store using the selected profile via the `mach submit` command.                                                                                                              |
-| **106–114** | `&submit-ios`              | Submits the latest successful iOS binary to Apple TestFlight/App Store via `mach submit`.                                                                                                                                                    |
-| **116–126** | `&maestro-e2e-ios`         | Triggers a custom simulator-compatible iOS test build and runs automated user flows via Maestro (stored under `.maestro/` folder).                                                                                                           |
-| **127–137** | `&maestro-auth-e2e-ios`    | Runs authenticated flows in `.maestro-authenticated/` by parsing secure login credentials (MFA Key, Test User Email/Password) from pipeline settings.                                                                                        |
-| **138–163** | `&maestro-e2e-ios-staging` | Specialized staging automated test execution step. If Maestro tests fail, it terminates the script execution cleanly (`set +e` controls errors) and saves screen-recording outputs.                                                          |
-| **164–183** | `&deploy-web`              | Builds the React web distribution (`npm run build:web`), uploads the production bundle (`dist/`) directly to AWS S3, and triggers a CloudFront CDN invalidation step so users immediately see updates.                                       |
+| Line        | Step Name                  | Description & Purpose                                                                                                                                                                                                                         |
+| :---------- | :------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **12–15**   | `&security-scan`           | Runs Atlassian's security scan pipe (`git-secrets-scan`) to identify committed credentials, secret API keys, or certificates.                                                                                                                 |
+| **17–23**   | `&linting`                 | Performs a clean install (`npm ci`) and runs static analysis checking code formatting constraints (`npm run lint`).                                                                                                                           |
+| **25–32**   | `&unit-tests`              | Runs unit tests inside a double-resourced container (`size: 2x` gives 8GB RAM for high performance) with Jest.                                                                                                                                |
+| **34–42**   | `&test-coverage`           | Runs tests, generates a test coverage report (`lcov.info`), and sends this information directly to Codacy's security/analysis dashboard.                                                                                                      |
+| **44–50**   | `&semantic-release`        | Analyzes commit history to automatically bump versions, create git release tags, and write automated changelogs.                                                                                                                              |
+| **52–74**   | `&build-ios`               | Compiles the iOS binary on EAS Cloud using `@radhya/mach`. It extracts the build URL from output JSON, calls a shell script to extract commit log updates, constructs a custom Slack notification, and pushes it to a Slack channel webhook.  |
+| **75–97**   | `&build-android`           | Identical to iOS compilation above, but compiles and releases for Android.                                                                                                                                                                    |
+| **98–105**  | `&submit-android`          | Submits the latest successful Android bundle to the Google Play Store using the selected profile via the `mach submit` command.                                                                                                               |
+| **106–114** | `&submit-ios`              | Submits the latest successful iOS binary to Apple TestFlight/App Store via `mach submit`.                                                                                                                                                     |
+| **116–126** | `&maestro-e2e-ios`         | Triggers a custom simulator-compatible iOS test build and runs automated user flows via Maestro (stored under `.maestro/` folder).                                                                                                            |
+| **127–137** | `&maestro-auth-e2e-ios`    | Runs authenticated flows in `.maestro-authenticated/` by parsing secure login credentials (MFA Key, Test User Email/Password) from pipeline settings.                                                                                         |
+| **138–163** | `&maestro-e2e-ios-staging` | Specialized staging automated test execution step. If Maestro tests fail, it terminates the script execution cleanly (`set +e` controls errors) and saves screen-recording outputs.                                                           |
+| **164–183** | `&deploy-web`              | Builds the React web distribution (`npm run build:web`), uploads the production bundle (`dist/`) directly to AWS S3, and triggers a CloudFront CDN invalidation step so users immediately see updates.                                        |
 
 #### Pipelines Triggers & Execution Blocks
 
@@ -232,11 +220,11 @@ Bitbucket utilizes YAML anchors (`&name`) to declare steps that can be reference
 
 ## 📊 Key Differences at a Glance
 
-| Feature / Detail       | RN Basic Structure ([ci.yml](file:///Users/darshan/Documents/Projects/Products/RN_Basic_Structure/.github/workflows/ci.yml)) | Asthma Connect ([bitbucket-pipelines.yml](file:///Users/darshan/Documents/Projects/ReactNative/Zyrous/asthma-australia-app/bitbucket-pipelines.yml)) |
-| :--------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Platform**           | GitHub Actions                                                                                                               | Bitbucket Pipelines                                                                                                                                  |
-| **Structure Context**  | Multi-project workspace (Expo vs. CLI)                                                                                       | Single application code repository                                                                                                                   |
-| **Smart Re-runs**      | Runs checks only on modified directories (via `paths-filter`)                                                                | Runs global build steps based on branch matching                                                                                                     |
-| **E2E Testing**        | Not defined                                                                                                                  | Integrated Maestro test execution on iOS simulators                                                                                                  |
-| **Release Management** | Standard EAS compilation                                                                                                     | Semantic Release engine + Slack build notification output                                                                                            |
-| **Web Infrastructure** | Not configured                                                                                                               | S3 Web build sync + AWS CloudFront cache invalidation                                                                                                |
+| Feature / Detail       | expo-structure ([ci.yml](file:///Users/darshan/Documents/Projects/Products/expo-structure/.github/workflows/ci.yml)) | Asthma Connect ([bitbucket-pipelines.yml](file:///Users/darshan/Documents/Projects/ReactNative/Zyrous/asthma-australia-app/bitbucket-pipelines.yml)) |
+| :--------------------- | :-------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Platform**           | GitHub Actions                                                                                                        | Bitbucket Pipelines                                                                                                                                  |
+| **Structure Context**  | Single Expo project at repository root                                                                                | Single application code repository                                                                                                                   |
+| **Smart Re-runs**      | Runs on all pushes/PRs to `main` / `develop`                                                                          | Runs global build steps based on branch matching                                                                                                     |
+| **E2E Testing**        | Not defined                                                                                                           | Integrated Maestro test execution on iOS simulators                                                                                                  |
+| **Release Management** | Standard EAS compilation                                                                                              | Semantic Release engine + Slack build notification output                                                                                            |
+| **Web Infrastructure** | Not configured                                                                                                        | S3 Web build sync + AWS CloudFront cache invalidation                                                                                                |
