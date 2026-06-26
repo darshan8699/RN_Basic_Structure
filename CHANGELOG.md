@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/darshan8699/expo-structure/compare/v1.0.0...v1.0.1) (2026-06-26)
+
+
+### Bug Fixes
+
+* improve documentation clarity ([e007c43](https://github.com/darshan8699/expo-structure/commit/e007c435574d1098c6c7f724720f3f553c690a00))
+
 # 1.0.0 (2026-06-26)
 
 
